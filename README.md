@@ -46,3 +46,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Taking a timestamp of the moment a POST request is recieved
     $post_time = time();
 ```
+
+Following, we make sure the user ID we recieved belongs to a user in the Moodle database and if it does, we retrieve all it's sessions for today:
+```php
+
+    // We validate that the user exists
+    $user = getUser($id);
+
+    if ($user) {
+
+        // Retrieving sessions and validating if there are sessions
+        $todaySessionsForUser = getTodaySessionsForUser($user->id);
+```
