@@ -8,10 +8,7 @@ This system is divided into three parts:
 - _'Observing'_ any changes in the .json file and sending information to PHP script in Moodle.
 - Managing attendance inside Moodle and automatically updating database.
 
-From now on we will call each part, [Arduino script](#arduino-script), [Observer](#observer) and [PHP script](#php-script) respectively. These parts will be described bellow.
-
-### Arduino script
-**Explain Arduino script here.**
+From now on we will call the second and third parts [Observer](#observer) and [PHP script](#php-script) respectively. These parts will be described bellow.
 
 ### Observer
 **Explain Observer here**
