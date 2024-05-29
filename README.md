@@ -31,3 +31,18 @@ The first part of the script consists of a series of methods that help refactori
 - **getSessionLogsOfUser($userId, $sessionId):** Retrieves the logs of a user in a specific session.
 
 #### POST API
+The second part of the script starts with the following lines and from now on the following code will only be executed when a POST HTTP request is recieved:
+```php
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    // Here's how we get the user id from the RFID card
+
+    // The body of the POST request is stored in the $json_data variable
+    $json_data = json_decode(file_get_contents("php://input", true));
+
+    // And we get the userID as a property of the $json_data object
+    $id = $json_data->userID;
+
+    // Taking a timestamp of the moment a POST request is recieved
+    $post_time = time();
+```
