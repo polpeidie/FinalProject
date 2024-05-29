@@ -8,23 +8,29 @@ This system is divided into three parts:
 - _'Observing'_ any changes in the .json file and sending information to PHP script in Moodle.
 - Managing attendance inside Moodle and automatically updating database.
 
-From now on we will call each part, Arduino script[^1], Observer[^2] and PHP script[^3] respectively.
+From now on we will call each part, [Arduino script](#arduino-script), [Observer](#observer) and [PHP script](#php-script) respectively. These parts will be described bellow.
 
-### [^1]:Arduino script
+### Arduino script
 **Explain Arduino script here.**
 
-### [^2]Observer
+### Observer
 **Explain Observer here**
 
-### [^3]PHP script
-This script is 
+---
 
-[Go to Google][1]
-[Go to Reddit][2]
+### PHP script
+This script is in the **attendance_manager.php**. Since this script uses methods like **get_records()**, **get_records_list()** or **update_user_status()**, this script should be placed in the Moodle root directory for it to work correctly, since this methods are imported from the [Moodle DML API](https://moodledev.io/docs/4.4/apis/core/dml).
 
-[1]: https://google.com
-[2]: https://reddit.com
+In the repository, and it consists of two parts:
 
-```php
-echo 'Hello World!';
-```
+#### Methods declarations
+The first part of the script consists of a series of methods that help refactoring the logic of the script. The methods are the following:
+- **getUsers():** Lists all users in moodle database.
+- **getUser($userId):** Retrieves a user record from the database by user ID.
+- **getUserCourses($userId):** Retrieves all courses of a user from database by user ID.
+- **getTodaySessionsForUser($userId):** Retrieves all the sessions of today for a user from database by the users ID.
+- **getTodaySessions():** Retrieves all the sessions that are taking place today.
+- **getStatusesForSession($attendanceid):** Retrieves the available statuses for an attendance instance.
+- **getSessionLogsOfUser($userId, $sessionId):** Retrieves the logs of a user in a specific session.
+
+#### POST API
