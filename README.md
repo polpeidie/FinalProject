@@ -10,17 +10,17 @@ This system is divided into three parts:
 
 From now on we will call the second and third parts [Observer](#observer) and [PHP script](#php-script) respectively. These parts will be described bellow.
 
-### Observer
+## Observer
 **Explain Observer here**
 
 ---
 
-### PHP script
+## PHP script
 This script is in the **attendance_manager.php**. Since this script uses methods like **get_records()**, **get_records_list()** or **update_user_status()**, this script should be placed in the Moodle root directory for it to work correctly, since this methods are imported from the [Moodle DML API](https://moodledev.io/docs/4.4/apis/core/dml).
 
 In the repository, and it consists of two parts:
 
-#### Methods declarations
+### Methods declarations
 The first part of the script consists of a series of methods that help refactoring the logic of the script. The methods are the following:
 - **getUsers():** Lists all users in moodle database.
 - **getUser($userId):** Retrieves a user record from the database by user ID.
@@ -30,31 +30,67 @@ The first part of the script consists of a series of methods that help refactori
 - **getStatusesForSession($attendanceid):** Retrieves the available statuses for an attendance instance.
 - **getSessionLogsOfUser($userId, $sessionId):** Retrieves the logs of a user in a specific session.
 
-#### POST API
-The second part of the script starts with the following lines and from now on the following code will only be executed when a POST HTTP request is recieved:
-```php
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+### POST API
+The second part of the script starts with the following lines and from now on the following code will only be executed when a POST HTTP request is recieved. # Attendance Tracking Script
 
-    // Here's how we get the user id from the RFID card
+#### Overview
 
-    // The body of the POST request is stored in the $json_data variable
-    $json_data = json_decode(file_get_contents("php://input", true));
+This PHP script handles POST requests to record and update the attendance status of users based on RFID card swipes. It processes the input data, validates the user, retrieves relevant sessions, and updates the attendance status accordingly.
 
-    // And we get the userID as a property of the $json_data object
-    $id = $json_data->userID;
+## How It Works
 
-    // Taking a timestamp of the moment a POST request is recieved
-    $post_time = time();
-```
+### Request Handling
 
-Following, we make sure the user ID we recieved belongs to a user in the Moodle database and if it does, we retrieve all it's sessions for today:
-```php
+- The script checks if the incoming request method is POST.
+- It retrieves and decodes the JSON data from the request body, extracting the `userID` field.
+- It takes a timestamp (`$post_time`) of when the POST request is received.
 
-    // We validate that the user exists
-    $user = getUser($id);
+### User Validation
 
-    if ($user) {
+- The script validates if the user exists by calling the `getUser` function with the extracted `userID`.
+- If the user exists, it retrieves today's sessions for the user using the `getTodaySessionsForUser` function.
 
-        // Retrieving sessions and validating if there are sessions
-        $todaySessionsForUser = getTodaySessionsForUser($user->id);
-```
+### Session Processing
+
+- For each session:
+  - It retrieves the logs of the session using the `getSessionLogsOfUser` function.
+  - It retrieves the statuses for the session using the `getStatusesForSession` function and categorizes them as Present (P), Late (L), or Absent (A).
+  - It compares the current timestamp (`$post_time`) with the session start time (`$sessdate`) and updates the attendance status based on the following criteria:
+    1. **Present**: If the POST time is within 5 minutes of the session start.
+    2. **Late**: If the POST time is between 5 and 10 minutes after the session start.
+    3. **Absent**: If the POST time is more than 10 minutes after the session start.
+  - If there are no logs and the user swipes within the present or late timeframe, it updates the status accordingly.
+  - If the user was marked absent but swipes within the present or late timeframe, it updates the status to present or late.
+  - If the user checks out early (before the session ends), it updates the status to absent if the user was previously marked present or late.
+
+### Response
+
+- The script echoes the corresponding status description (Present, Late, Absent) or specific messages based on the attendance status updates and conditions met.
+
+## Functions Used
+
+- **`getUser($id)`**: Validates if the user exists based on the provided user ID.
+- **`getTodaySessionsForUser($userId)`**: Retrieves today's sessions for the user.
+- **`getSessionLogsOfUser($userId, $sessionId)`**: Retrieves the logs of the session for the user.
+- **`getStatusesForSession($attendanceId)`**: Retrieves the attendance statuses for the session.
+- **`attendance_handler::update_user_status($sessionId, $userId, $lastTakenBy, $statusId, $statusSet)`**: Updates the user's attendance status for the session.
+
+## Script Flow
+
+1. **Receive POST request**.
+2. **Extract and decode JSON data**.
+3. **Validate user**.
+4. **Retrieve today's sessions for the user**.
+5. **Process each session**:
+   - Retrieve logs and statuses.
+   - Compare current time with session start time.
+   - Update attendance status based on conditions.
+6. **Handle early checkout**.
+7. **Output status updates and messages**.
+
+## Messages and Outputs
+
+- "Present", "Late", "Absent": Based on the attendance status.
+- "Ya está registrado. No has llegado.": If the user was already marked and tries to update status after the absent timeframe.
+- "Has salido antes de que terminara la sesión. Estado actualizado a ausente.": If the user leaves before the session ends.
+- "No sessions for today.": If there are no sessions for the user today.
